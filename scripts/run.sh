@@ -76,7 +76,9 @@ if [ -f "$INPUT_DOCKER_IMAGE" ]; then
 fi
 
 start_group "Starting build container"
-env > "$env_file"
+# Docker does not like variable values containing newlines in an --env-file, we
+# will pass it separately:
+env --unset=INPUT_APT_SOURCES > "$env_file"
 # shellcheck disable=SC2086
 container_id=$(docker run \
 	$INPUT_EXTRA_DOCKER_ARGS \
@@ -84,6 +86,7 @@ container_id=$(docker run \
 	--env-file="$env_file" \
 	--env=GITHUB_ACTION_PATH=/github/action \
 	--env=GITHUB_WORKSPACE=/github/workspace \
+	--env=INPUT_APT_SOURCES \
 	--rm \
 	--volume="$GITHUB_ACTION_PATH":/github/action \
 	--volume="$GITHUB_WORKSPACE":/github/workspace \
